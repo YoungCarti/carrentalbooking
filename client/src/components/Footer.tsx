@@ -93,7 +93,7 @@ const Footer = () => {
                                 </li>
                             ))}
                             <li>
-                                <a href="#admin/dashboard" className="hover:text-blue-400 transition-colors">Admin</a>
+                                <a href="http://localhost:5174" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">Admin</a>
                             </li>
                         </ul>
                     </div>

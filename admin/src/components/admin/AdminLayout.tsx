@@ -1,5 +1,6 @@
 import React from 'react';
 import { LayoutDashboard, PlusCircle, Car, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 
 interface AdminLayoutProps {
@@ -9,10 +10,10 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activePage }) => {
     const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '#admin/dashboard' },
-        { id: 'add-car', label: 'Add car', icon: PlusCircle, href: '#admin/add-car' },
-        { id: 'manage-cars', label: 'Manage Cars', icon: Car, href: '#admin/manage-cars' },
-        { id: 'manage-bookings', label: 'Manage Bookings', icon: Calendar, href: '#admin/manage-bookings' },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+        { id: 'add-car', label: 'Add car', icon: PlusCircle, href: '/add-car' },
+        { id: 'manage-cars', label: 'Manage Cars', icon: Car, href: '/manage-cars' },
+        { id: 'manage-bookings', label: 'Manage Bookings', icon: Calendar, href: '/manage-bookings' },
     ];
 
     return (
@@ -24,16 +25,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activePage }) => {
                         GS
                     </div>
                     <h2 className="text-gray-900 font-bold tracking-tight">GreatStack</h2>
-                    <a href="#home" className="text-xs text-blue-600 hover:text-blue-700 mt-1 inline-block font-medium">
+                    <a href="http://localhost:5173" className="text-xs text-blue-600 hover:text-blue-700 mt-1 inline-block font-medium">
                         Back to Home
                     </a>
                 </div>
 
                 <nav className="p-4 space-y-2">
                     {navItems.map((item) => (
-                        <a
+                        <Link
                             key={item.id}
-                            href={item.href}
+                            to={item.href}
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm",
                                 activePage === item.id
@@ -43,7 +44,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activePage }) => {
                         >
                             <item.icon className={cn("w-5 h-5", activePage === item.id ? "text-blue-600" : "text-gray-400")} />
                             {item.label}
-                        </a>
+                        </Link>
                     ))}
                 </nav>
             </aside>
