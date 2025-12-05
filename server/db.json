@@ -36,5 +36,14 @@
       "isFeatured": true,
       "description": "The Ora Good Cat is a stylish and practical electric hatchback."
     }
+  ],
+  "users": [
+    {
+      "email": "lewis@gmail.com",
+      "password": "$2a$10$bUQu3QNgx/jFQNOSxI2jo.Fd.49NIBqHOFHLEGdDPjeAAQuuuV.3K",
+      "name": "Lewis Hamilton",
+      "age": 21,
+      "id": 1
+    }
   ]
 }
