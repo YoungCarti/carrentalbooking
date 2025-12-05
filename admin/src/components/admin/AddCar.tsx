@@ -22,19 +22,36 @@ const AddCar = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Car added successfully!');
-        setFormData({
-            name: '',
-            category: '',
-            price: '',
-            passengers: '',
-            transmission: '',
-            fuel: '',
-            imageUrl: '',
-            description: ''
-        });
+        try {
+            const response = await fetch('http://localhost:3000/cars', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    price: Number(formData.price),
+                    isFeatured: false,
+                    isElectric: formData.fuel.toLowerCase().includes('electric'),
+                    rating: 5.0, // Default rating
+                    seats: '5 seats', // Default or add field
+                    type: formData.fuel, // Map fuel to type for now
+                    capacity: '50L', // Default
+                }),
+            });
+
+            if (response.ok) {
+                alert('Car added successfully!');
+                handleClear();
+            } else {
+                alert('Failed to add car.');
+            }
+        } catch (error) {
+            console.error('Error adding car:', error);
+            alert('Error adding car.');
+        }
     };
 
     const handleClear = () => {
@@ -85,7 +102,7 @@ const AddCar = () => {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="price">Price per Day ($)</Label>
+                        <Label htmlFor="price">Price per Day (RM)</Label>
                         <Input
                             id="price"
                             name="price"

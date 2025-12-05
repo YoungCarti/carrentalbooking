@@ -1,0 +1,40 @@
+{
+  "cars": [
+    {
+      "id": 1,
+      "name": "Nissan KICKS e-POWER",
+      "category": "Sport",
+      "price": 443.7,
+      "oldPrice": 500,
+      "passengers": "2 Person",
+      "transmission": "Auto",
+      "fuel": "Electric",
+      "imageUrl": "https://images.unsplash.com/photo-1591147244581-6b5a97198909?q=80&w=2070&auto=format&fit=crop",
+      "rating": 4.8,
+      "seats": "2 seats",
+      "type": "Electric",
+      "capacity": "90L Capacity",
+      "isElectric": true,
+      "isFeatured": true,
+      "description": "Experience the thrill of electric driving with the Nissan KICKS e-POWER."
+    },
+    {
+      "id": 2,
+      "name": "Ora Good Cat EV",
+      "category": "Hatchback",
+      "price": 459.7,
+      "oldPrice": 500,
+      "passengers": "4 Person",
+      "transmission": "Auto",
+      "fuel": "Electric",
+      "imageUrl": "https://images.unsplash.com/photo-1626847037657-fd3622613ce3?q=80&w=2070&auto=format&fit=crop",
+      "rating": 5,
+      "seats": "4 seats",
+      "type": "Electric",
+      "capacity": "80L Capacity",
+      "isElectric": true,
+      "isFeatured": true,
+      "description": "The Ora Good Cat is a stylish and practical electric hatchback."
+    }
+  ]
+}

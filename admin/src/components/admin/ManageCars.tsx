@@ -1,20 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
-import { Search, Edit, Trash2 } from 'lucide-react';
+import { Search, Edit, Trash2, Star, StarOff } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 
+interface Car {
+    id: number;
+    name: string;
+    category: string;
+    price: number;
+    passengers: number | string;
+    transmission: string;
+    fuel: string;
+    status?: string;
+    isFeatured?: boolean;
+}
+
 const ManageCars = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [cars, setCars] = useState([
-        { id: 1, name: 'Tesla Model 3', category: 'Electric', price: 89, passengers: 5, transmission: 'Auto', fuel: 'Electric', status: 'Available' },
-        { id: 2, name: 'BMW 5 Series', category: 'Luxury', price: 120, passengers: 5, transmission: 'Auto', fuel: 'Petrol', status: 'Available' },
-        { id: 3, name: 'Mercedes C-Class', category: 'Premium', price: 115, passengers: 5, transmission: 'Auto', fuel: 'Diesel', status: 'Rented' },
-    ]);
+    const [cars, setCars] = useState<Car[]>([]);
 
-    const handleDelete = (id: number) => {
+    useEffect(() => {
+        fetchCars();
+    }, []);
+
+    const fetchCars = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/cars');
+            const data = await response.json();
+            setCars(data);
+        } catch (error) {
+            console.error('Error fetching cars:', error);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
         if (window.confirm('Are you sure you want to delete this car?')) {
-            setCars(cars.filter(car => car.id !== id));
+            try {
+                await fetch(`http://localhost:3000/cars/${id}`, { method: 'DELETE' });
+                setCars(cars.filter(car => car.id !== id));
+            } catch (error) {
+                console.error('Error deleting car:', error);
+            }
+        }
+    };
+
+    const handleToggleFeatured = async (car: Car) => {
+        try {
+            const updatedCar = { ...car, isFeatured: !car.isFeatured };
+            await fetch(`http://localhost:3000/cars/${car.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isFeatured: updatedCar.isFeatured })
+            });
+            setCars(cars.map(c => c.id === car.id ? updatedCar : c));
+        } catch (error) {
+            console.error('Error updating car:', error);
         }
     };
 
@@ -54,10 +95,7 @@ const ManageCars = () => {
                                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Car Name</th>
                                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Category</th>
                                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Price/Day</th>
-                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Passengers</th>
-                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Transmission</th>
-                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Fuel</th>
-                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Featured</th>
                                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
                             </tr>
                         </thead>
@@ -70,15 +108,16 @@ const ManageCars = () => {
                                             {car.category}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">${car.price}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{car.passengers}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{car.transmission}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{car.fuel}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">RM{car.price}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${car.status === 'Available' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
-                                            }`}>
-                                            {car.status}
-                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleToggleFeatured(car)}
+                                            className={car.isFeatured ? "text-yellow-500 hover:text-yellow-600" : "text-gray-400 hover:text-gray-500"}
+                                        >
+                                            {car.isFeatured ? <Star className="w-5 h-5 fill-current" /> : <StarOff className="w-5 h-5" />}
+                                        </Button>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex gap-2">

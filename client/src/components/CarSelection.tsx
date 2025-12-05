@@ -1,51 +1,37 @@
-
+import { useState, useEffect } from 'react';
 import { Users, Cog, Fuel, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import ImageWithFallback from '../figma/ImageWithFallback';
 
+interface Car {
+    id: number;
+    name: string;
+    category: string;
+    price: number;
+    passengers: string | number;
+    transmission: string;
+    fuel: string;
+    imageUrl?: string;
+    image?: string;
+    rating: number;
+}
+
 const CarSelection = () => {
-    const cars = [
-        {
-            name: 'Tesla Model 3',
-            category: 'Electric',
-            price: 89,
-            passengers: 5,
-            transmission: 'Auto',
-            fuel: 'Electric',
-            image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=2071&auto=format&fit=crop',
-            rating: 4.9
-        },
-        {
-            name: 'BMW 5 Series',
-            category: 'Luxury',
-            price: 120,
-            passengers: 5,
-            transmission: 'Auto',
-            fuel: 'Petrol',
-            image: 'https://images.unsplash.com/photo-1555215695-3004980adade?q=80&w=2070&auto=format&fit=crop',
-            rating: 4.8
-        },
-        {
-            name: 'Mercedes C-Class',
-            category: 'Premium',
-            price: 115,
-            passengers: 5,
-            transmission: 'Auto',
-            fuel: 'Diesel',
-            image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop',
-            rating: 4.8
-        },
-        {
-            name: 'Audi A4',
-            category: 'Executive',
-            price: 95,
-            passengers: 5,
-            transmission: 'Auto',
-            fuel: 'Petrol',
-            image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=2070&auto=format&fit=crop',
-            rating: 4.7
+    const [cars, setCars] = useState<Car[]>([]);
+
+    useEffect(() => {
+        fetchFeaturedCars();
+    }, []);
+
+    const fetchFeaturedCars = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/cars?isFeatured=true');
+            const data = await response.json();
+            setCars(data);
+        } catch (error) {
+            console.error('Error fetching featured cars:', error);
         }
-    ];
+    };
 
     return (
         <section id="vehicles" className="py-24 bg-white">
@@ -68,7 +54,7 @@ const CarSelection = () => {
                         >
                             <div className="relative aspect-[4/3] overflow-hidden">
                                 <ImageWithFallback
-                                    src={car.image}
+                                    src={car.imageUrl || car.image || ''}
                                     alt={car.name}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
@@ -99,7 +85,7 @@ const CarSelection = () => {
 
                                 <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-100">
                                     <div>
-                                        <span className="text-2xl font-bold text-gray-900">${car.price}</span>
+                                        <span className="text-2xl font-bold text-gray-900">RM{car.price}</span>
                                         <span className="text-sm text-gray-500">/day</span>
                                     </div>
                                     <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl px-6 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105 transition-all">
