@@ -1,7 +1,7 @@
-
 import { Car, Facebook, Twitter, Instagram, Linkedin, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
@@ -65,11 +65,18 @@ const Footer = () => {
                     <div>
                         <h4 className="text-white font-bold mb-6">Company</h4>
                         <ul className="space-y-4 text-sm">
-                            {['About Us', 'Careers', 'Press', 'Blog'].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="hover:text-blue-400 transition-colors">{item}</a>
-                                </li>
-                            ))}
+                            <li>
+                                <a href="/#" className="hover:text-blue-400 transition-colors">Home</a>
+                            </li>
+                            <li>
+                                <a href="/about#" className="hover:text-blue-400 transition-colors">About Us</a>
+                            </li>
+                            <li>
+                                <a href="/about#mission" className="hover:text-blue-400 transition-colors">Mission</a>
+                            </li>
+                            <li>
+                                <a href="/about#values" className="hover:text-blue-400 transition-colors">Values</a>
+                            </li>
                         </ul>
                     </div>
 
@@ -87,11 +94,15 @@ const Footer = () => {
                     <div>
                         <h4 className="text-white font-bold mb-6">Support</h4>
                         <ul className="space-y-4 text-sm">
-                            {['Help Center', 'Contact Us', 'Privacy Policy'].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="hover:text-blue-400 transition-colors">{item}</a>
-                                </li>
-                            ))}
+                            <li>
+                                <a href="/contact#" className="hover:text-blue-400 transition-colors">Contact Us</a>
+                            </li>
+                            <li>
+                                <a href="/contact#help" className="hover:text-blue-400 transition-colors">Help Center</a>
+                            </li>
+                            <li>
+                                <a href="/contact#faq" className="hover:text-blue-400 transition-colors">FAQ</a>
+                            </li>
                             <li>
                                 <a href="http://localhost:5174" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">Admin</a>
                             </li>
