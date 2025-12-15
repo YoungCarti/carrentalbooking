@@ -7,6 +7,8 @@ import WhyChooseUs from './components/WhyChooseUs';
 import Statistics from './components/Statistics';
 import Footer from './components/Footer';
 import Vehicles from './pages/Vehicles';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 const Home = () => (
   <>
@@ -25,6 +27,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/vehicles" element={<Vehicles />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
       <Footer />
     </div>

@@ -59,8 +59,8 @@ const Navbar = () => {
                         <Link to="/" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Home</Link>
                         <Link to="/vehicles" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Vehicles</Link>
                         <Link to="/#deals" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Deals</Link>
-                        <Link to="/#about" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">About</Link>
-                        <Link to="/#contact" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Contact</Link>
+                        <a href="/about" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">About</a>
+                        <a href="/contact" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Contact</a>
                     </div>
 
                     <div className="flex items-center gap-4">
