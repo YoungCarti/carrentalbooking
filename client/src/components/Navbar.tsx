@@ -58,7 +58,9 @@ const Navbar = () => {
                     <div className="hidden md:flex items-center gap-8">
                         <Link to="/" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Home</Link>
                         <Link to="/vehicles" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Vehicles</Link>
-                        <Link to="/#deals" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Deals</Link>
+                        {user && (
+                            <Link to="/my-bookings" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Bookings</Link>
+                        )}
                         <a href="/about" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">About</a>
                         <a href="/contact" className="text-white/90 hover:text-blue-400 text-sm font-medium transition-colors">Contact</a>
                     </div>

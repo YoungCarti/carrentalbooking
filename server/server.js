@@ -140,6 +140,58 @@ app.get('/cars', async (req, res) => {
   }
 });
 
+// Search cars by available dates MUST come before '/cars/:id' to avoid route conflicts
+app.get('/cars/search', async (req, res) => {
+  try {
+    const { pickupDate, dropoffDate } = req.query;
+
+    if (!pickupDate || !dropoffDate) {
+      return res.status(400).json({ message: 'pickupDate and dropoffDate are required' });
+    }
+
+    if (new Date(pickupDate) >= new Date(dropoffDate)) {
+      return res.status(400).json({ message: 'dropoffDate must be after pickupDate' });
+    }
+
+    const [cars] = await pool.query('SELECT * FROM cars');
+    if (!cars || cars.length === 0) {
+      return res.json([]);
+    }
+
+    const [bookings] = await pool.query(
+      'SELECT DISTINCT car_id FROM bookings WHERE (return_date > ? AND pickup_date < ?) AND status != ?',
+      [pickupDate, dropoffDate, 'cancelled']
+    );
+
+    const bookedCarIds = bookings.map(b => b.car_id);
+    const availableCarsRaw = cars.filter(car => !bookedCarIds.includes(car.id));
+
+    const availableCars = availableCarsRaw.map(car => ({
+      id: car.id,
+      name: car.name,
+      category: car.category,
+      price: parseFloat(car.price),
+      oldPrice: car.old_price != null ? parseFloat(car.old_price) : null,
+      passengers: car.passengers,
+      transmission: car.transmission,
+      fuel: car.fuel,
+      imageUrl: car.image_url,
+      rating: car.rating != null ? parseFloat(car.rating) : null,
+      seats: car.seats,
+      type: car.type,
+      capacity: car.capacity,
+      isElectric: Boolean(car.is_electric),
+      isFeatured: Boolean(car.is_featured),
+      description: car.description
+    }));
+
+    return res.json(availableCars);
+  } catch (error) {
+    console.error('Error searching cars:', error);
+    res.status(500).json({ message: 'Error searching cars' });
+  }
+});
+
 // Get single car
 app.get('/cars/:id', async (req, res) => {
   try {
@@ -172,8 +224,8 @@ app.get('/cars/:id', async (req, res) => {
   }
 });
 
-// Add new car (protected)
-app.post('/cars', authenticateToken, async (req, res) => {
+// Add new car (no auth required for uni project)
+app.post('/cars', async (req, res) => {
   try {
     const { name, category, price, oldPrice, passengers, transmission, fuel, imageUrl, rating, seats, type, capacity, isElectric, isFeatured, description } = req.body;
     
@@ -206,8 +258,8 @@ app.post('/cars', authenticateToken, async (req, res) => {
   }
 });
 
-// Update car (protected)
-app.put('/cars/:id', authenticateToken, async (req, res) => {
+// Update car (no auth required for uni project)
+app.put('/cars/:id', async (req, res) => {
   try {
     const { name, category, price, oldPrice, passengers, transmission, fuel, imageUrl, rating, seats, type, capacity, isElectric, isFeatured, description } = req.body;
     
@@ -244,8 +296,10 @@ app.put('/cars/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete car (protected)
-app.delete('/cars/:id', authenticateToken, async (req, res) => {
+// (duplicate '/cars/search' route removed; see earlier definition above '/cars/:id')
+
+// Delete car (no auth required for uni project)
+app.delete('/cars/:id', async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM cars WHERE id = ?', [req.params.id]);
     
@@ -262,8 +316,8 @@ app.delete('/cars/:id', authenticateToken, async (req, res) => {
 
 // ============ BOOKINGS ROUTES ============
 
-// Get all bookings (protected)
-app.get('/bookings', authenticateToken, async (req, res) => {
+// Get all bookings (no auth required for uni project)
+app.get('/bookings', async (req, res) => {
   try {
     const [bookings] = await pool.query(`
       SELECT b.*, c.name as car_name, c.image_url, u.name as user_name, u.email as user_email
@@ -297,8 +351,8 @@ app.get('/bookings', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's bookings (protected)
-app.get('/bookings/user/:userId', authenticateToken, async (req, res) => {
+// Get user's bookings (no auth required for uni project)
+app.get('/bookings/user/:userId', async (req, res) => {
   try {
     const [bookings] = await pool.query(`
       SELECT b.*, c.name as car_name, c.image_url
@@ -330,8 +384,8 @@ app.get('/bookings/user/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-// Create booking (protected)
-app.post('/bookings', authenticateToken, async (req, res) => {
+// Create booking (no auth required for uni project)
+app.post('/bookings', async (req, res) => {
   try {
     const { userId, carId, pickupDate, returnDate, pickupLocation, returnLocation, totalPrice } = req.body;
     
@@ -357,8 +411,8 @@ app.post('/bookings', authenticateToken, async (req, res) => {
   }
 });
 
-// Update booking status (protected)
-app.patch('/bookings/:id', authenticateToken, async (req, res) => {
+// Update booking status (no auth required for uni project)
+app.patch('/bookings/:id', async (req, res) => {
   try {
     const { status } = req.body;
     
@@ -378,8 +432,8 @@ app.patch('/bookings/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete booking (protected)
-app.delete('/bookings/:id', authenticateToken, async (req, res) => {
+// Delete booking (no auth required for uni project)
+app.delete('/bookings/:id', async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM bookings WHERE id = ?', [req.params.id]);
     
@@ -396,8 +450,8 @@ app.delete('/bookings/:id', authenticateToken, async (req, res) => {
 
 // ============ USERS ROUTES ============
 
-// Get all users (protected)
-app.get('/users', authenticateToken, async (req, res) => {
+// Get all users (no auth required for uni project)
+app.get('/users', async (req, res) => {
   try {
     const [users] = await pool.query('SELECT id, email, name, age, created_at FROM users');
     res.json(users);
@@ -407,8 +461,8 @@ app.get('/users', authenticateToken, async (req, res) => {
   }
 });
 
-// Get single user (protected)
-app.get('/users/:id', authenticateToken, async (req, res) => {
+// Get single user (no auth required for uni project)
+app.get('/users/:id', async (req, res) => {
   try {
     const [users] = await pool.query('SELECT id, email, name, age, created_at FROM users WHERE id = ?', [req.params.id]);
     if (users.length === 0) {
@@ -431,9 +485,32 @@ async function startServer() {
     process.exit(1);
   }
 
+  // Initialize test user if they don't exist
+  await initializeTestUser();
+
   app.listen(PORT, () => {
     console.log(`✓ Server is running on http://localhost:${PORT}`);
   });
+}
+
+// Initialize test user
+async function initializeTestUser() {
+  try {
+    const [existingUser] = await pool.query('SELECT * FROM users WHERE email = ?', ['lewis@gmail.com']);
+    
+    if (existingUser.length === 0) {
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      await pool.query(
+        'INSERT INTO users (email, password, name, age) VALUES (?, ?, ?, ?)',
+        ['lewis@gmail.com', hashedPassword, 'Lewis Hamilton', 21]
+      );
+      console.log('✓ Test user created: lewis@gmail.com / password123');
+    } else {
+      console.log('✓ Test user already exists');
+    }
+  } catch (error) {
+    console.error('Error initializing test user:', error);
+  }
 }
 
 startServer();

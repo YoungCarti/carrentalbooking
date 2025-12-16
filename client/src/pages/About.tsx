@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 
 const About = () => {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-gray-100">
             {/* Hero Section */}
-            <section className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-white py-20">
-                <div className="container mx-auto px-6 text-center">
-                    <h1 className="text-5xl font-bold mb-6">About RentWheels</h1>
-                    <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <section className="bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95] pt-32 pb-16 px-6 text-white">
+                <div className="container mx-auto max-w-4xl text-center">
+                    <h1 className="text-5xl font-bold mb-4">About RentWheels</h1>
+                    <p className="text-lg text-indigo-100 leading-relaxed">
                         We're on a mission to make car rental simple, affordable, and hassle-free for everyone.
                     </p>
                 </div>

@@ -9,6 +9,8 @@ import Footer from './components/Footer';
 import Vehicles from './pages/Vehicles';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Booking from './pages/Booking';
+import MyBookings from './pages/MyBookings';
 
 const Home = () => (
   <>
@@ -22,11 +24,13 @@ const Home = () => (
 
 function App() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/vehicles" element={<Vehicles />} />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>

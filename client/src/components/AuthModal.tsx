@@ -3,12 +3,13 @@ import { X, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { authApi, setAuthToken } from '../lib/api';
 
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialView?: 'signin' | 'signup';
-    onLogin: (user: { name: string; email: string }) => void;
+    onLogin: (user: { id?: number; name: string; email: string }) => void;
 }
 
 type AuthView = 'signin' | 'signup' | 'forgot-password';
@@ -17,6 +18,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'signin', onLogin }: AuthMod
     const [view, setView] = useState<AuthView>(initialView);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // Form states
     const [email, setEmail] = useState('');
@@ -36,24 +38,17 @@ const AuthModal = ({ isOpen, onClose, initialView = 'signin', onLogin }: AuthMod
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Login failed');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('accessToken', data.accessToken);
+            const data = await authApi.login(email, password);
+            setAuthToken(data.accessToken);
             localStorage.setItem('user', JSON.stringify(data.user));
             onLogin(data.user);
             onClose();
         } catch (error) {
             alert('Invalid email or password');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -64,24 +59,17 @@ const AuthModal = ({ isOpen, onClose, initialView = 'signin', onLogin }: AuthMod
             return;
         }
 
+        setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name, age: Number(age) }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Registration failed');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('accessToken', data.accessToken);
+            const data = await authApi.register(email, password, name, Number(age));
+            setAuthToken(data.accessToken);
             localStorage.setItem('user', JSON.stringify(data.user));
             onLogin(data.user);
             onClose();
         } catch (error) {
             alert('Registration failed. Email might already be in use.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -161,8 +149,8 @@ const AuthModal = ({ isOpen, onClose, initialView = 'signin', onLogin }: AuthMod
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg shadow-blue-500/30">
-                                Continue
+                            <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg shadow-blue-500/30 disabled:opacity-50">
+                                {loading ? 'Signing in...' : 'Continue'}
                             </Button>
                         </form>
 
@@ -267,8 +255,8 @@ const AuthModal = ({ isOpen, onClose, initialView = 'signin', onLogin }: AuthMod
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg shadow-blue-500/30">
-                                Sign Up
+                            <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg shadow-blue-500/30 disabled:opacity-50">
+                                {loading ? 'Signing up...' : 'Sign Up'}
                             </Button>
                         </form>
 

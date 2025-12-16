@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, Cog, Fuel, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import ImageWithFallback from '../figma/ImageWithFallback';
+import { carsApi } from '../lib/api';
 
 interface Car {
     id: number;
@@ -17,17 +19,24 @@ interface Car {
 }
 
 const CarSelection = () => {
+    const navigate = useNavigate();
     const [cars, setCars] = useState<Car[]>([]);
+    const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
         fetchFeaturedCars();
     }, []);
 
     const fetchFeaturedCars = async () => {
         try {
-            const response = await fetch('http://localhost:3000/cars?isFeatured=true');
-            const data = await response.json();
-            setCars(data);
+            const data = await carsApi.getAll();
+            // Filter for featured cars on client side
+            const featured = data.filter((car: any) => car.isFeatured);
+            setCars(featured);
         } catch (error) {
             console.error('Error fetching featured cars:', error);
         }
@@ -88,7 +97,20 @@ const CarSelection = () => {
                                         <span className="text-2xl font-bold text-gray-900">RM{car.price}</span>
                                         <span className="text-sm text-gray-500">/day</span>
                                     </div>
-                                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl px-6 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105 transition-all">
+                                    <Button onClick={() => {
+                                        if (!user) {
+                                            alert('Please sign in first to make a booking');
+                                            return;
+                                        }
+                                        const params = new URLSearchParams({
+                                            carId: car.id.toString(),
+                                            carName: car.name,
+                                            carPrice: car.price.toString()
+                                        });
+                                        window.scrollTo(0, 0);
+                                        window.scrollTo(0, 0);
+                                        navigate(`/booking?${params.toString()}`);
+                                    }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl px-6 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105 transition-all">
                                         Rent Now
                                     </Button>
                                 </div>
