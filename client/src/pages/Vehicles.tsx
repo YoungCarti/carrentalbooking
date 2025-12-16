@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Clock, Car, Users, Fuel, Gauge, Zap, Filter } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import ImageWithFallback from '../figma/ImageWithFallback';
+import { carsApi } from '../lib/api';
 
 interface CarData {
     id: number;
     name: string;
     price: number;
     oldPrice?: number;
-    image?: string; // Handle imageUrl vs image
+    image?: string;
     imageUrl?: string;
     rating: number;
     seats: string;
@@ -19,19 +21,52 @@ interface CarData {
     capacity: string;
     passengers: string;
     isElectric: boolean;
+    availableLocations?: string[];
+}
+
+interface SearchCriteria {
+    location: string;
+    pickupDate: string;
+    pickupTime: string;
+    dropoffDate: string;
+    dropoffTime: string;
 }
 
 const Vehicles = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [cars, setCars] = useState<CarData[]>([]);
+    const [user, setUser] = useState(null);
+    const [searchCriteria, setSearchCriteria] = useState<SearchCriteria | null>(null);
+    const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
-        fetchCars();
+        window.scrollTo(0, 0);
     }, []);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+
+    // Check if we have search results from Hero component
+    useEffect(() => {
+        if (location.state?.searchResults) {
+            setCars(location.state.searchResults);
+            setSearchCriteria(location.state.searchCriteria);
+            setHasSearched(true);
+            // Clear state to prevent persisting on reload
+            window.history.replaceState({}, document.title);
+        } else {
+            fetchCars();
+        }
+    }, [location]);
 
     const fetchCars = async () => {
         try {
-            const response = await fetch('http://localhost:3000/cars');
-            const data = await response.json();
+            const data = await carsApi.getAll();
             setCars(data);
         } catch (error) {
             console.error('Error fetching cars:', error);
@@ -40,6 +75,17 @@ const Vehicles = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Search Results Info */}
+            {hasSearched && searchCriteria && (
+                <div className="bg-blue-50 border-b border-blue-200 py-3 px-6">
+                    <div className="container mx-auto">
+                        <p className="text-sm text-blue-900">
+                            <span className="font-semibold">Available Cars:</span> {new Date(searchCriteria.pickupDate).toLocaleDateString()} - {new Date(searchCriteria.dropoffDate).toLocaleDateString()}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Gradient Header */}
             <div className="bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95] pt-32 pb-20 px-6">
                 <div className="container mx-auto">
@@ -247,9 +293,23 @@ const Vehicles = () => {
                                         </div>
 
                                         <div className="mt-8 flex justify-end">
-                                            <Button className="bg-[#4f46e5] hover:bg-[#4338ca] text-white rounded-xl px-10 py-6 font-semibold shadow-lg shadow-indigo-500/20 w-full md:w-auto">
+                                            <button 
+                                                onClick={() => {
+                                                    if (!user) {
+                                                        alert('Please sign in first to make a booking');
+                                                        return;
+                                                    }
+                                                    const params = new URLSearchParams({
+                                                        carId: car.id.toString(),
+                                                        carName: car.name,
+                                                        carPrice: car.price.toString()
+                                                    });
+                                                    navigate(`/booking?${params.toString()}`);
+                                                }}
+                                                className="bg-[#4f46e5] hover:bg-[#4338ca] text-white rounded-xl px-10 py-6 font-semibold shadow-lg shadow-indigo-500/20 w-full md:w-auto"
+                                            >
                                                 Book Now
-                                            </Button>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

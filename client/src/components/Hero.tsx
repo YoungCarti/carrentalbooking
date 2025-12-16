@@ -1,13 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
+import { carsApi } from '../lib/api';
 
 const Hero = () => {
+    const navigate = useNavigate();
     const [location, setLocation] = useState("");
+    const [pickupDate, setPickupDate] = useState("");
+    const [pickupTime, setPickupTime] = useState("10:00");
+    const [dropoffDate, setDropoffDate] = useState("");
+    const [dropoffTime, setDropoffTime] = useState("10:00");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const commonLocations = [
+        "Kuala Lumpur",
+        "Petaling Jaya",
+        "Shah Alam",
+        "Subang",
+        "Klang",
+        "Ampang",
+        "Kajang",
+        "Puchong",
+        "Cheras",
+        "Cyberjaya"
+    ];
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -21,42 +42,66 @@ const Hero = () => {
         };
     }, [wrapperRef]);
 
-    // Debounced Search Effect
-    useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (location.length > 2) {
-                setIsLoading(true);
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=5`
-                    );
-                    const data = await response.json();
-                    setFilteredLocations(data.map((item: any) => item.display_name));
-                    setShowSuggestions(true);
-                } catch (error) {
-                    console.error("Error fetching locations:", error);
-                    setFilteredLocations([]);
-                } finally {
-                    setIsLoading(false);
-                }
-            } else {
-                setFilteredLocations([]);
-                setIsLoading(false);
-            }
-        }, 500); // 500ms debounce
-
-        return () => clearTimeout(timer);
-    }, [location]);
-
     const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setLocation(e.target.value);
-        // We don't set showSuggestions(true) here immediately to avoid flashing empty lists
-        // It will be set to true when data comes back in the effect
+        const value = e.target.value;
+        setLocation(value);
+        
+        if (value.length > 0) {
+            const filtered = commonLocations.filter(loc =>
+                loc.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredLocations(filtered);
+            setShowSuggestions(filtered.length > 0);
+        } else {
+            setFilteredLocations([]);
+            setShowSuggestions(false);
+        }
     };
 
     const handleLocationSelect = (loc: string) => {
         setLocation(loc);
         setShowSuggestions(false);
+    };
+
+    const handleSearch = async () => {
+        if (!pickupDate || !dropoffDate) {
+            alert('Please select pickup and drop-off dates');
+            return;
+        }
+
+        if (new Date(pickupDate) >= new Date(dropoffDate)) {
+            alert('Drop-off date must be after pickup date');
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const results = await carsApi.search(pickupDate, dropoffDate);
+            
+            // Store search criteria in localStorage for the vehicles page
+            localStorage.setItem('searchCriteria', JSON.stringify({
+                location,
+                pickupDate,
+                pickupTime,
+                dropoffDate,
+                dropoffTime,
+                results
+            }));
+
+            // Navigate to vehicles page with search results
+            navigate('/vehicles', { 
+                state: { 
+                    searchResults: results,
+                    searchCriteria: { location, pickupDate, pickupTime, dropoffDate, dropoffTime }
+                }
+            });
+        } catch (error: any) {
+            console.error('Search error:', error);
+            const msg = typeof error?.message === 'string' ? error.message : 'Error searching cars. Please try again.';
+            alert(msg);
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     return (
@@ -101,7 +146,6 @@ const Hero = () => {
                                         className="w-full outline-none bg-transparent text-white placeholder-slate-400 font-medium"
                                     />
                                 </div>
-                                {isLoading && <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />}
                             </div>
 
                             {/* Autocomplete Dropdown */}
@@ -119,7 +163,7 @@ const Hero = () => {
                                             </div>
                                         ))
                                     ) : (
-                                        !isLoading && <div className="px-4 py-3 text-gray-400 text-sm">No locations found</div>
+                                        <div className="px-4 py-3 text-gray-400 text-sm">No locations found</div>
                                     )}
                                 </div>
                             )}
@@ -131,7 +175,12 @@ const Hero = () => {
                                 <Calendar className="w-5 h-5 text-blue-400" />
                                 <div>
                                     <label className="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">Pick-up date</label>
-                                    <input type="date" className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]" />
+                                    <input
+                                        type="date"
+                                        value={pickupDate}
+                                        onChange={(e) => setPickupDate(e.target.value)}
+                                        className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -142,7 +191,12 @@ const Hero = () => {
                                 <Clock className="w-5 h-5 text-blue-400" />
                                 <div>
                                     <label className="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">Time</label>
-                                    <input type="time" className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]" defaultValue="10:00" />
+                                    <input
+                                        type="time"
+                                        value={pickupTime}
+                                        onChange={(e) => setPickupTime(e.target.value)}
+                                        className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -153,7 +207,12 @@ const Hero = () => {
                                 <Calendar className="w-5 h-5 text-blue-400" />
                                 <div>
                                     <label className="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">Drop-off date</label>
-                                    <input type="date" className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]" />
+                                    <input
+                                        type="date"
+                                        value={dropoffDate}
+                                        onChange={(e) => setDropoffDate(e.target.value)}
+                                        className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -164,15 +223,24 @@ const Hero = () => {
                                 <Clock className="w-5 h-5 text-blue-400" />
                                 <div>
                                     <label className="block text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">Time</label>
-                                    <input type="time" className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]" defaultValue="10:00" />
+                                    <input
+                                        type="time"
+                                        value={dropoffTime}
+                                        onChange={(e) => setDropoffTime(e.target.value)}
+                                        className="w-full outline-none bg-transparent text-white font-medium [color-scheme:dark]"
+                                    />
                                 </div>
                             </div>
                         </div>
 
                         {/* Search Button */}
                         <div className="p-2 w-full lg:w-auto">
-                            <Button className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-lg h-full text-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all">
-                                Search
+                            <Button
+                                onClick={handleSearch}
+                                disabled={isSearching}
+                                className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-lg h-full text-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSearching ? 'Searching...' : 'Search'}
                             </Button>
                         </div>
                     </div>

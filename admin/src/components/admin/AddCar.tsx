@@ -4,18 +4,24 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { carsApi } from '../../lib/api';
 
 const AddCar = () => {
     const [formData, setFormData] = useState({
         name: '',
         category: '',
         price: '',
+        oldPrice: '',
         passengers: '',
         transmission: '',
         fuel: '',
         imageUrl: '',
+        rating: '5.0',
+        seats: '5 seats',
+        capacity: '50L',
         description: ''
     });
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -24,33 +30,24 @@ const AddCar = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/cars', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    price: Number(formData.price),
-                    isFeatured: false,
-                    isElectric: formData.fuel.toLowerCase().includes('electric'),
-                    rating: 5.0, // Default rating
-                    seats: '5 seats', // Default or add field
-                    type: formData.fuel, // Map fuel to type for now
-                    capacity: '50L', // Default
-                }),
+            await carsApi.create({
+                ...formData,
+                price: Number(formData.price),
+                oldPrice: Number(formData.oldPrice) || Number(formData.price),
+                rating: Number(formData.rating),
+                isFeatured: false,
+                isElectric: formData.fuel.toLowerCase().includes('electric'),
+                type: formData.fuel,
             });
-
-            if (response.ok) {
-                alert('Car added successfully!');
-                handleClear();
-            } else {
-                alert('Failed to add car.');
-            }
+            alert('Car added successfully!');
+            handleClear();
         } catch (error) {
             console.error('Error adding car:', error);
-            alert('Error adding car.');
+            alert('Failed to add car. You may not have permission or there was a server error.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -59,10 +56,14 @@ const AddCar = () => {
             name: '',
             category: '',
             price: '',
+            oldPrice: '',
             passengers: '',
             transmission: '',
             fuel: '',
             imageUrl: '',
+            rating: '5.0',
+            seats: '5 seats',
+            capacity: '50L',
             description: ''
         });
     };
@@ -112,6 +113,18 @@ const AddCar = () => {
                             placeholder="e.g., 89"
                             className="rounded-xl"
                             required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="oldPrice">Old Price (RM)</Label>
+                        <Input
+                            id="oldPrice"
+                            name="oldPrice"
+                            type="number"
+                            value={formData.oldPrice}
+                            onChange={handleChange}
+                            placeholder="e.g., 100"
+                            className="rounded-xl"
                         />
                     </div>
                 </div>
@@ -183,10 +196,10 @@ const AddCar = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                    <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all">
-                        Add Car
+                    <Button type="submit" disabled={loading} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all disabled:opacity-50">
+                        {loading ? 'Adding...' : 'Add Car'}
                     </Button>
-                    <Button type="button" variant="outline" onClick={handleClear} className="rounded-xl">
+                    <Button type="button" variant="outline" onClick={handleClear} className="rounded-xl" disabled={loading}>
                         Clear Form
                     </Button>
                 </div>
